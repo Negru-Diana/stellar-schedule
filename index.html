@@ -1028,9 +1028,12 @@ function render(){
     if(isVacationDay && (S.view === 'combined' || S.view === 'uni')){
       const vBan = document.createElement('div');
       vBan.className = 'ban-vac-inline';
+      const vStart = daySs && daySs.data && daySs.data.start ? formatDisplayDate(daySs.data.start) : '';
+      const vEnd = daySs && daySs.data && daySs.data.end ? formatDisplayDate(daySs.data.end) : '';
+      const vPeriod = (vStart && vEnd && vStart !== vEnd) ? ` (${vStart} – ${vEnd})` : (vStart ? ` (${vStart})` : '');
       vBan.innerHTML = `<span style="font-size:1.5rem;">${daySs.data.emoji||'🏖️'}</span>
       <div>
-        <div style="font-weight:800;color:#db2777;font-size:.84rem;">${daySs.data.label||'Vacanță Universitară'}</div>
+        <div style="font-weight:800;color:#db2777;font-size:.84rem;">${daySs.data.label||'Vacanță Universitară'}${vPeriod}</div>
         <div style="font-size:.72rem;color:var(--s600);font-weight:600;">No university courses or seminars today — vacation period! ✨</div>
       </div>`;
       card.appendChild(vBan);
@@ -1051,11 +1054,20 @@ function render(){
       }
       if(!hName) hName = 'Zi liberă națională';
 
+      let natPeriod = formatDisplayDate(dayDate);
+      if(manualNatOff){
+        const s = manualNatOff.offdayStartDate || manualNatOff.offdayDate;
+        const e = manualNatOff.offdayEndDate || s;
+        if(s && e && s !== e){
+          natPeriod = `${formatDisplayDate(s)} – ${formatDisplayDate(e)}`;
+        }
+      }
+
       const ban = document.createElement('div');
       ban.className = 'ban-hol';
       ban.innerHTML = `<i class="fa-solid fa-flag" style="color:#dc2626;font-size:1.3rem;"></i>
         <div style="flex:1;">
-          <div style="font-weight:800;color:#991b1b;font-size:.85rem;">🇷🇴 ${hName} (${formatDisplayDate(dayDate)}) — Zi Liberă Legală</div>
+          <div style="font-weight:800;color:#991b1b;font-size:.85rem;">🇷🇴 ${hName} (${natPeriod}) — Zi Liberă Legală</div>
           <div style="font-size:.72rem;color:#7f1d1d;font-weight:600;">Zi liberă națională: cursurile universitare sunt suspendate și este zi liberă de la muncă! 🎉</div>
           ${manualNatOff && manualNatOff.notes ? `<div style="font-size:.68rem;color:#991b1b;font-style:italic;margin-top:2px;">📌 ${manualNatOff.notes}</div>` : ''}
         </div>
@@ -1063,7 +1075,7 @@ function render(){
       card.appendChild(ban);
     }
 
-    // 3. Other Off-Day Banners (CCM, Personal, Study) - shown as styled banners with their own colors
+    // 3. Other Off-Day Banners (CCM, Personal, Study) - shown as styled banners with the date period
     if(hasCustomOff && (S.view === 'combined' || S.view === 'work')){
       otherOffdays.forEach(od => {
         const t = od.offdayType || 'personal';
@@ -1094,13 +1106,18 @@ function render(){
           }
         };
         const c = cfg[t] || cfg.personal;
+
+        const s = od.offdayStartDate || od.offdayDate;
+        const e = od.offdayEndDate || s;
+        const periodText = (s && e && s !== e) ? `${formatDisplayDate(s)} – ${formatDisplayDate(e)}` : formatDisplayDate(s || dayDate);
+
         const ban = document.createElement('div');
         ban.className = c.cls;
         ban.innerHTML = `
           ${c.icon}
           <div style="flex:1;">
             <div style="font-weight:800;color:${c.titleColor};font-size:.85rem;">
-              ${c.badge}: ${od.title || 'Zi liberă'} (${formatDisplayDate(dayDate)})
+              ${c.badge}: ${od.title || 'Zi liberă'} (${periodText})
             </div>
             <div style="font-size:.72rem;color:${c.subColor};font-weight:600;">${c.desc}</div>
             ${od.notes ? `<div style="font-size:.68rem;color:${c.titleColor};font-style:italic;margin-top:2px;">📌 ${od.notes}</div>` : ''}
