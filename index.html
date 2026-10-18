@@ -172,11 +172,15 @@
     .rl{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:12px;border:1.5px solid #e2e8f0;cursor:pointer;font-size:.74rem;font-weight:700;transition:all .15s;color:var(--s600)}
     .rl:hover{background:var(--p50);border-color:var(--p200)}
     .rl input{accent-color:var(--p500)}
-    .odt-btn{border:none;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;font-size:.75rem;border-radius:10px;padding:8px 12px;border:1.5px solid #e2e8f0;background:#fff;color:var(--s600);transition:all .2s;text-align:left;display:flex;flex-direction:column;gap:2px}
-    .odt-nat{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
-    .odt-ccm{background:var(--p100);border-color:var(--p200);color:#5b21b6}
-    .odt-pers{background:#e0f2fe;border-color:#7dd3fc;color:#0c4a6e}
-    .odt-stud{background:#fef3c7;border-color:#fcd34d;color:#92400e}
+    
+    /* Off Day Type Buttons with full active states */
+    .odt-btn{border:none;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;font-size:.75rem;border-radius:12px;padding:9px 12px;border:1.5px solid #e2e8f0;background:#fff;color:var(--s600);transition:all .2s;text-align:left;display:flex;flex-direction:column;gap:2px}
+    .odt-btn:hover{background:#f8fafc;border-color:var(--s300)}
+    .odt-btn.odt-national, .odt-btn.odt-nat{background:#fee2e2 !important;border-color:#ef4444 !important;color:#991b1b !important;box-shadow:0 0 0 2px rgba(239,68,68,0.25) !important;transform:translateY(-1px)}
+    .odt-btn.odt-ccm{background:var(--p100) !important;border-color:var(--p500) !important;color:#5b21b6 !important;box-shadow:0 0 0 2px rgba(139,92,246,0.25) !important;transform:translateY(-1px)}
+    .odt-btn.odt-personal, .odt-btn.odt-pers{background:#e0f2fe !important;border-color:#0284c7 !important;color:#0c4a6e !important;box-shadow:0 0 0 2px rgba(2,132,199,0.25) !important;transform:translateY(-1px)}
+    .odt-btn.odt-study, .odt-btn.odt-stud{background:#fef3c7 !important;border-color:#f59e0b !important;color:#92400e !important;box-shadow:0 0 0 2px rgba(245,158,11,0.25) !important;transform:translateY(-1px)}
+    
     .f-actions{display:flex;justify-content:flex-end;gap:10px;padding-top:16px;border-top:1.5px solid #f1f5f9;margin-top:6px}
     /* SEM STRUCTURE ITEMS */
     .sper{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;border:1px solid;margin-bottom:8px;font-size:.78rem}
@@ -937,7 +941,7 @@ function render(){
 
   daysToShow.forEach(day=>{
     const dayDate=weekDays[day];
-    const isNatFree=dayDate&&isFreeDay(dayDate);
+    const isOfficialNatFree=dayDate&&isFreeDay(dayDate);
     const daySs=dayDate?semStatus(dayDate):null;
     const isVacationDay=daySs&&daySs.type==='vacation';
     const isTeachingDay=daySs&&daySs.type==='teaching';
@@ -950,9 +954,19 @@ function render(){
       return it.day===day;
     });
 
-    // Suppress regular university classes if it's NOT a teaching period
+    // Check off days covering this specific calendar date
+    const offdays=di.filter(it=>it.category==='offday');
+    const manualNatOff=offdays.find(it=>it.offdayType==='national');
+    const isNatFree=isOfficialNatFree || Boolean(manualNatOff);
+
+    // Other offdays (CCM, personal, study)
+    const otherOffdays=offdays.filter(it=>it.offdayType!=='national');
+    const hasCustomOff=otherOffdays.length>0;
+    const isWorkFree=isNatFree || hasCustomOff;
+
+    // Suppress regular university classes if it's NOT a teaching period OR if it's a National Free Day!
     di=di.filter(it=>{
-      if(it.category==='uni' && !isTeachingDay){
+      if(it.category==='uni' && (!isTeachingDay || isNatFree)){
         return false;
       }
       return true;
@@ -974,25 +988,23 @@ function render(){
       return f==='both'||f===S.parity;
     });
 
-    // Check off days covering this specific calendar date
-    const offdays=di.filter(it=>it.category==='offday');
-    const hasCustomOff=offdays.length>0;
-    const isWorkFree=isNatFree || hasCustomOff;
+    // National holidays get rendered as the official banner, so filter them out from generic cards
+    const gridItems = di.filter(it => !(it.category === 'offday' && it.offdayType === 'national'));
 
     total+=di.length;
-    di.sort((a,b)=>toMin(a.startTime||'00:00')-toMin(b.startTime||'00:00'));
-    const cnf=conflicts(di.filter(it=>it.category!=='offday'));
+    gridItems.sort((a,b)=>toMin(a.startTime||'00:00')-toMin(b.startTime||'00:00'));
+    const cnf=conflicts(gridItems.filter(it=>it.category!=='offday'));
 
-    // Header Badge: Displayed only when the day is an official off-day or national holiday
+    // Header Badge: Displayed when the day is an official/manual national holiday or off-day
     let wvH='';
     if(isNatFree&&(S.view==='combined'||S.view==='work')){
       wvH=`<span class="wv" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;"><i class="fa-solid fa-flag"></i> 🎌 Zi Liberă Națională</span>`;
     } else if(hasCustomOff&&(S.view==='combined'||S.view==='work')){
-      const od=offdays[0];const t=od.offdayType||'personal';
-      const oc={national:'#fee2e2',ccm:'#ede9fe',personal:'#e0f2fe',study:'#fef3c7'};
-      const otc={national:'#991b1b',ccm:'#5b21b6',personal:'#0c4a6e',study:'#92400e'};
-      const obc={national:'#fca5a5',ccm:'#ddd6fe',personal:'#7dd3fc',study:'#fcd34d'};
-      const ol={national:'🎌 National Holiday',ccm:'📋 Free conf. CCM',personal:'🌿 Personal Free Day',study:'📚 Study Free Day'};
+      const od=otherOffdays[0];const t=od.offdayType||'personal';
+      const oc={ccm:'#ede9fe',personal:'#e0f2fe',study:'#fef3c7'};
+      const otc={ccm:'#5b21b6',personal:'#0c4a6e',study:'#92400e'};
+      const obc={ccm:'#ddd6fe',personal:'#7dd3fc',study:'#fcd34d'};
+      const ol={ccm:'📋 Free conf. CCM',personal:'🌿 Personal Free Day',study:'📚 Study Free Day'};
       wvH=`<span class="wv" style="background:${oc[t]};color:${otc[t]};border:1px solid ${obc[t]}"><i class="fa-solid fa-umbrella-beach"></i> ${ol[t]}</span>`;
     }
 
@@ -1027,7 +1039,7 @@ function render(){
       card.appendChild(vBan);
     }
 
-    // 2. In-day National Free Day Banner
+    // 2. In-day National Free Day Banner (applied to both built-in and manually added national holidays)
     if(isNatFree&&(S.view==='combined'||S.view==='uni'||S.view==='work')){
       const holidayNames={
         '2026-12-01':'Ziua Marii Uniri',
@@ -1035,22 +1047,30 @@ function render(){
         '2027-01-07':'Sfântul Ioan Botezătorul',
         '2027-01-24':'Ziua Unirii Principatelor Române'
       };
-      const hName=holidayNames[dayDate]||'Zi liberă națională';
+      let hName = (dayDate && holidayNames[dayDate]) || '';
+      if(!hName && manualNatOff){
+        hName = manualNatOff.title || 'Zi liberă națională';
+      }
+      if(!hName) hName = 'Zi liberă națională';
+
       const ban=document.createElement('div');
       ban.className='ban-hol';
-      ban.innerHTML=`<i class="fa-solid fa-flag" style="color:#dc2626;font-size:1.3rem;"></i><div>
-        <div style="font-weight:800;color:#991b1b;font-size:.85rem;">🇷🇴 ${hName} (${formatDisplayDate(dayDate)}) — Zi Liberă Legală</div>
-        <div style="font-size:.72rem;color:#7f1d1d;font-weight:600;">Zi liberă națională: cursurile universitare sunt suspendate și este zi liberă de la muncă! 🎉</div>
-      </div>`;
+      ban.innerHTML=`<i class="fa-solid fa-flag" style="color:#dc2626;font-size:1.3rem;"></i>
+        <div style="flex:1;">
+          <div style="font-weight:800;color:#991b1b;font-size:.85rem;">🇷🇴 ${hName} (${formatDisplayDate(dayDate)}) — Zi Liberă Legală</div>
+          <div style="font-size:.72rem;color:#7f1d1d;font-weight:600;">Zi liberă națională: cursurile universitare sunt suspendate și este zi liberă de la muncă! 🎉</div>
+          ${manualNatOff && manualNatOff.notes ? `<div style="font-size:.68rem;color:#991b1b;font-style:italic;margin-top:2px;">📌 ${manualNatOff.notes}</div>` : ''}
+        </div>
+        ${manualNatOff ? acts(manualNatOff.id) : ''}`;
       card.appendChild(ban);
     }
 
     // 3. Render Events
-    if(di.length===0 && !isVacationDay && !isNatFree){
+    if(gridItems.length===0 && !isVacationDay && !isNatFree){
       card.innerHTML+=`<div class="empty-st" style="padding:32px 20px;"><div class="ee" style="font-size:2rem;">✨</div><p style="font-size:.82rem;color:var(--s400);">Nothing on ${day} for the ${S.parity} week.</p></div>`;
-    } else if(di.length>0) {
+    } else if(gridItems.length>0) {
       const g=document.createElement('div');g.className='ev-grid';
-      di.forEach(it=>{
+      gridItems.forEach(it=>{
         const isUniGrey = it.category==='uni' && isNatFree;
         const isWorkGrey = it.category==='work' && isWorkFree;
         g.appendChild(buildCard(it, cnf.has(it.id), isUniGrey || isWorkGrey, isNatFree));
@@ -1333,9 +1353,16 @@ function setupModalUI(cat,isEdit){
 }
 function closeModal(id){document.getElementById(id).classList.remove('vis');}
 function openSettingsModal(){document.getElementById('settingsModal').classList.add('vis');}
+
 function selOdt(t){
-  _odType=t;document.getElementById('fOdtType').value=t;
-  ['national','ccm','personal','study'].forEach(type=>{document.getElementById('odt-'+type).className='odt-btn'+(type===t?' odt-'+type:'');});
+  _odType=t;
+  document.getElementById('fOdtType').value=t;
+  ['national','ccm','personal','study'].forEach(type=>{
+    const btn = document.getElementById('odt-'+type);
+    if(btn){
+      btn.className = 'odt-btn' + (type === t ? ' odt-' + type : '');
+    }
+  });
 }
 
 function toggleOdSpan(){
