@@ -576,29 +576,9 @@ const SEM = {
 };
 
 /* =========================================================
-   DEFAULT SCHEDULE (Fallback when empty)
+   DEFAULT SCHEDULE (empty by default)
    ========================================================= */
-const DEFAULT = [
-  {id:'u1',category:'uni',title:'Distributed Systems',type:'Lecture',day:'Monday',startTime:'10:00',endTime:'12:00',room:'Amphi 3',building:'Faculty of Informatics',professor:'Prof. E. Ionescu',frequency:'both',notes:'Bring presentation slides'},
-  {id:'u2',category:'uni',title:'Distributed Systems Lab',type:'Lab',day:'Monday',startTime:'12:15',endTime:'13:45',room:'Lab C204',building:'Corp C',professor:'Asist. A. Radu',frequency:'odd',notes:'Assignment review'},
-  {id:'w1',category:'work',title:'Work: Morning Shift',day:'Monday',startTime:'07:30',endTime:'09:30',frequency:'both',notes:'Review PRs & standup'},
-  {id:'w2',category:'work',title:'Work: Afternoon (Odd)',day:'Monday',startTime:'14:00',endTime:'21:00',frequency:'odd',notes:'Main session'},
-  {id:'w2e',category:'work',title:'Work: Afternoon (Even)',day:'Monday',startTime:'12:30',endTime:'19:30',frequency:'even',notes:'Earlier start, no Lab on even weeks'},
-  {id:'u3',category:'uni',title:'Cloud Computing & DevOps',type:'Lecture',day:'Tuesday',startTime:'09:00',endTime:'12:00',room:'Hall B1',building:'Main Campus',professor:'Dr. Mihai',frequency:'both',notes:''},
-  {id:'u4',category:'uni',title:'Machine Learning',type:'Seminar',day:'Tuesday',startTime:'13:00',endTime:'15:00',room:'Room 102',building:'Tech Wing',professor:'Lect. Diana V.',frequency:'even',notes:''},
-  {id:'w3e',category:'work',title:'Work Shift (Tue Even)',day:'Tuesday',startTime:'15:30',endTime:'00:30',frequency:'even',notes:''},
-  {id:'w3o',category:'work',title:'Work Shift (Tue Odd)',day:'Tuesday',startTime:'12:30',endTime:'21:30',frequency:'odd',notes:''},
-  {id:'w4a',category:'work',title:'Work Morning',day:'Wednesday',startTime:'07:00',endTime:'10:30',frequency:'both',notes:''},
-  {id:'u5',category:'uni',title:'Software Verification',type:'Lecture',day:'Wednesday',startTime:'11:00',endTime:'13:00',room:'Room 401',building:'Faculty of Informatics',professor:'Prof. S. Marinescu',frequency:'both',notes:''},
-  {id:'w4b',category:'work',title:'Work Afternoon',day:'Wednesday',startTime:'13:30',endTime:'19:00',frequency:'both',notes:''},
-  {id:'u6',category:'uni',title:'Mobile App Development',type:'Lab',day:'Thursday',startTime:'14:00',endTime:'16:00',room:'Lab 012',building:'Corp B',professor:'Asist. C. Dan',frequency:'odd',notes:''},
-  {id:'w5o1',category:'work',title:'Work Morning (Thu Odd)',day:'Thursday',startTime:'08:00',endTime:'13:30',frequency:'odd',notes:''},
-  {id:'w5o2',category:'work',title:'Work Evening (Thu Odd)',day:'Thursday',startTime:'16:30',endTime:'20:00',frequency:'odd',notes:''},
-  {id:'w5e',category:'work',title:'Work Full (Thu Even)',day:'Thursday',startTime:'09:00',endTime:'18:00',frequency:'even',notes:''},
-  {id:'u7',category:'uni',title:'Information Security',type:'Seminar',day:'Friday',startTime:'10:00',endTime:'12:00',room:'Room 205',building:'Main Campus',professor:'Dr. Alin G.',frequency:'both',notes:''},
-  {id:'w6a',category:'work',title:'Work Shift 1',day:'Friday',startTime:'06:30',endTime:'09:30',frequency:'both',notes:''},
-  {id:'w6b',category:'work',title:'Work Shift 2',day:'Friday',startTime:'12:30',endTime:'18:30',frequency:'both',notes:'Sprint retro'}
-];
+const DEFAULT = [];
 
 const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
